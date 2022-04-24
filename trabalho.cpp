@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 // tamanho da tabela
-#define M 99991
+#define M 97
 
 // tipo Palavra
 typedef struct {
@@ -14,13 +14,13 @@ typedef struct {
     char texto[50];
 } Palavra;
 
-// tipo nó usado na lista encadeada
+// tipo nÃ³ usado na lista encadeada
 typedef struct no {
     Palavra palavra;
     struct no *proximo;
 } No;
 
-// tipo lista com um ponteiro para o primeiro nó
+// tipo lista com um ponteiro para o primeiro nÃ³
 typedef struct {
     No *inicio;
     int tam;
@@ -29,9 +29,9 @@ typedef struct {
 // nossa tabela (vetor de ponteiros para listas)
 Lista *tabela[M];
 
-//--------------------------------- fim definições variáveis --------------------
+//--------------------------------- fim definiÃ§Ãµes variÃ¡veis --------------------
 
-//--------------------------------- funções meus tipos --------------------------
+//--------------------------------- funÃ§Ãµes meus tipos --------------------------
 
 // cria e retorna um tipo Palavra
 Palavra criarPalavra() {
@@ -48,8 +48,8 @@ void imprimirPalavra(Palavra p) {
     printf("\tNome: %s Contador: %d\n", p.texto, p.cont);
 }
 
-//-------------------------------- início funções lista -------------------------
-// cria uma lista vazia e retorna seu endereço na memória
+//-------------------------------- inÃ­cio funÃ§Ãµes lista -------------------------
+// cria uma lista vazia e retorna seu endereÃ§o na memÃ³ria
 Lista* criarLista() {
     Lista *l = (Lista*)malloc(sizeof(Lista));
     l->inicio = NULL;
@@ -58,10 +58,10 @@ Lista* criarLista() {
 }
 
 /*
-    inserir no início da lista
-    PARÂMETROS
+    inserir no inÃ­cio da lista
+    PARÃ‚METROS
     p - nova Palavra a ser inserida
-    *lista - endereço de uma lista encadeada.
+    *lista - endereÃ§o de uma lista encadeada.
 */
 void inserirInicio(Palavra p, Lista *lista) {
 	
@@ -85,7 +85,7 @@ int buscarNo(char str[], Lista *lista) {
         	aux = aux->proximo;
 		}            
     }
-    return 0;// palavra não encontrada
+    return 0;// palavra nÃ£o encontrada
 }
 
 void imprimirLista(No *inicio) {
@@ -94,10 +94,10 @@ void imprimirLista(No *inicio) {
         inicio = inicio->proximo;
     }
 }
-//---------------------------------- fim funções lista -------------------------
+//---------------------------------- fim funÃ§Ãµes lista -------------------------
 
-//--------------------------- início funções tabela hash -----------------------
-// inicializa a tabela com uma lista vazia em cada posição do vetor
+//--------------------------- inÃ­cio funÃ§Ãµes tabela hash -----------------------
+// inicializa a tabela com uma lista vazia em cada posiÃ§Ã£o do vetor
 void inicializar(){
     int i;
     for(i = 0; i < M; i++)
@@ -105,7 +105,7 @@ void inicializar(){
 }
 
 /*
-    Função hash a partir de texto
+    FunÃ§Ã£o hash a partir de texto
 */
 int funcaoHashString(char str[]){ // Amanda
 
@@ -113,7 +113,7 @@ int funcaoHashString(char str[]){ // Amanda
     unsigned int hash = 0;
 
     for(i = 0; i < tamS; i++)    	
-        hash += str[i]; // somatório do código ASCII vezes a posição
+        hash += str[i]; // somatÃ³rio do cÃ³digo ASCII vezes a posiÃ§Ã£o
     return hash % M;
 }
 
@@ -135,7 +135,7 @@ void inserTabela(char str[50]){
     inserirInicio(pal, tabela[indice]);
 }
 
-// busca uma Palavra. Seu retorno é um endereço ou NULL
+// busca uma Palavra. Seu retorno Ã© um endereÃ§o ou NULL
 /*Palavra* buscarPalavraTabela(int mat){
 	Palavra* palavra;
     //int indice = funcaoEspalhamento(mat);

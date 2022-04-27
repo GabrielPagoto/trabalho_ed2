@@ -33,7 +33,15 @@ Lista *tabela[M];
 
 //--------------------------------- funções meus tipos --------------------------
 
+// cria e retorna um tipo Palavra
+Palavra criarPalavra() {
+    Palavra p;
 
+	printf("Digite o nome da Palavra: ");
+    scanf("%*c");
+    fgets(p.texto, 50, stdin);
+    return p;
+}
 
 // imprime uma Palavra
 
@@ -101,18 +109,20 @@ void inicializar(){
 /*
     Função hash a partir de texto
 */
-int funcaoHashString(char str[]){ // Amanda
+int funcaoHashString(char* str){
 
-    int i, tamS = strlen(str);
+    int i, p = 31, p_pow = 1, tamS = strlen(str);
     unsigned int hash = 0;
 
-    for(i = 0; i < tamS; i++)
-        hash += str[i]; // somatório do código ASCII vezes a posição
-    return hash % M;
+    for(i = 0; i < tamS; i++){
+        hash = (hash + (str[i] - 'a' + 1) * p_pow) % M;
+        p_pow = (p_pow * p) % M;
+    }
+    return hash;
 }
 
 // cria uma Palavra e a insere na tabela
-void inserTabela(char str[50]){
+void inserTabela(char* str){
     //Palavra pal = criarPalavra();
     if(strlen(str) <= 2){
     	return;
@@ -170,7 +180,7 @@ void imprimirTabela(){
     for(i = 0; i < M; i++){
         percorrerLista(tabela[i]->inicio);
         printf("%d Lista tamanho: %d\n", i, tabela[i]->tam);
-        
+       // imprimirLista(tabela[i]->inicio);
     }
     printf("---------------------FIM TABELA-----------------------\n");
 }

@@ -6,18 +6,20 @@
 #include <stddef.h>
 
 // tamanho da tabela
-#define M 997
+#define M 3989
 
 // tipo Palavra
-typedef struct {
+/*typedef struct {
     int cont;
     char texto[50];
-} Palavra;
+} Palavra;*/
 
 // tipo nó usado na lista encadeada
 typedef struct no {
-    Palavra palavra;
+    //Palavra palavra;
     struct no *proximo;
+    int cont;
+    char texto[50];
 } No;
 
 // tipo lista com um ponteiro para o primeiro nó
@@ -26,22 +28,19 @@ typedef struct {
     int tam;
 } Lista;
 
+typedef struct arvoreRB {
+ int valor;
+ int cor;
+ struct arvoreRB *esq;
+ struct arvoreRB *dir;
+} ArvoreRB;
+
 // nossa tabela (vetor de ponteiros para listas)
 Lista *tabela[M];
 
 //--------------------------------- fim definições variáveis --------------------
 
 //--------------------------------- funções meus tipos --------------------------
-
-// cria e retorna um tipo Palavra
-Palavra criarPalavra() {
-    Palavra p;
-
-	printf("Digite o nome da Palavra: ");
-    scanf("%*c");
-    fgets(p.texto, 50, stdin);
-    return p;
-}
 
 // imprime uma Palavra
 
@@ -60,32 +59,34 @@ Lista* criarLista() {
     p - nova Palavra a ser inserida
     *lista - endereço de uma lista encadeada.
 */
-void inserirInicio(Palavra p, Lista *lista) {
+void inserirInicio(char* p, Lista *lista) {
 
     No *no = (No*)malloc(sizeof(No));
-    no->palavra = p;
+    strcpy(no->texto,p);
+	no->cont = 1;    
     no->proximo = lista->inicio;
     lista->inicio = no;
     lista->tam++;
 }
 
 // busca um elemento na lista
-void buscarNo(char str[], Lista *lista) {
+void buscarNo(char* str, Lista *lista) {
 	No* ant;
     No* plv = NULL;
     No* aux = lista->inicio;
     while(aux != NULL) {
-        if(strcmp(aux->palavra.texto, str) == 0){
+        if(strcmp(aux->texto, str) == 0){
             if(plv == NULL){
-        	aux->palavra.cont++;
+        	//aux->palavra.cont++;
             plv = aux;
             ant = aux;
             aux = aux->proximo;
             }else{
-             ant->proximo = aux->proximo;
-             free(aux);
-             aux = ant->proximo;
-             lista->tam--;
+            	plv->cont++;
+		        ant->proximo = aux->proximo;
+		        free(aux);
+		        aux = ant->proximo;
+		        lista->tam--;
             }
 		}
         else{
@@ -93,6 +94,21 @@ void buscarNo(char str[], Lista *lista) {
         	aux = aux->proximo;
 		}
     }
+}
+
+void buscarPalavra(char* str, Lista *lista) {
+    No* aux = lista->inicio;
+    while(aux != NULL) {
+        if(strcmp(aux->texto, str) == 0){
+            printf("\nFrequencia da palavra %s eh %d.", str, aux->cont);
+            return;
+		}
+        else{            
+        	aux = aux->proximo;
+		}
+    }
+    printf("\nPalavra %s nao encontrada.", str);
+    return;
 }
 
 
@@ -122,17 +138,14 @@ int funcaoHashString(char* str){
 }
 
 // cria uma Palavra e a insere na tabela
-void inserTabela(char* str){
+void inserTabela(char* str, int hash){
     //Palavra pal = criarPalavra();
     if(strlen(str) <= 2){
     	return;
 	}
 
-    Palavra pal;
-    strcpy(pal.texto,str);
-	int indice = funcaoHashString(pal.texto);
-	pal.cont = 1;
-    inserirInicio(pal, tabela[indice]);
+	//int indice = funcaoHashString(str);
+    inserirInicio(str, tabela[hash]);
 }
 
 // busca uma Palavra. Seu retorno é um endereço ou NULL
@@ -146,25 +159,27 @@ void inserTabela(char* str){
     else
         return NULL;
 }*/
-void limparPalavras(Palavra p) {
-    int indice = funcaoHashString(p.texto);
-    buscarNo(p.texto,tabela[indice]);
+void limparPalavras(char* str) {
+    int indice = funcaoHashString(str);
+    buscarNo(str,tabela[indice]);
 }
-void imprimirPalavra(Palavra p) {
-    printf("\tNome: %s Contador: %d\n", p.texto, p.cont);
+
+void imprimirPalavra(No* p) {
+    printf("\tNome: %s Contador: %d\n", p->texto, p->cont);
 }
 void percorrerLista(No *inicio) {
     while(inicio != NULL) {
-        limparPalavras(inicio->palavra);
+        limparPalavras(inicio->texto);
         inicio = inicio->proximo;
     }
 }
 void imprimirLista(No *inicio) {
     while(inicio != NULL) {
-        imprimirPalavra(inicio->palavra);
+        imprimirPalavra(inicio);
         inicio = inicio->proximo;
     }
 }
+
 // imprimir tabela
 void limparHash(){
     int i;
@@ -180,10 +195,25 @@ void imprimirTabela(){
     for(i = 0; i < M; i++){
         percorrerLista(tabela[i]->inicio);
         printf("%d Lista tamanho: %d\n", i, tabela[i]->tam);
-       // imprimirLista(tabela[i]->inicio);
+        //imprimirLista(tabela[i]->inicio);
     }
     printf("---------------------FIM TABELA-----------------------\n");
 }
+
+
+
+void buscaFreqPalavra(char* str){
+	int indice = funcaoHashString(str);
+	buscarPalavra(str, tabela[indice]);
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -192,66 +222,47 @@ int main() {
     FILE *fp;
     char str[50];
     char c;
+    
+    int p = 31, p_pow = 1;
+	unsigned int hash = 0;
 
-    if(fopen("64mb.txt", "rt") == NULL){
+    if(fopen("512mb.txt", "rt") == NULL){
     	printf("Arquivo nao encontrado.");
     	exit(0);
 	}
 	//fclose(fp);
-	fp = fopen("64mb.txt", "rt");
+	fp = fopen("512mb.txt", "rt");
 
     inicializar();
 
-    /*do {
-        printf("\n0 - Sair\n1 - Inserir\n2 - Buscar\n3 - Imprimir tabela\n");
-        scanf("%d", &op);
-        switch(op) {
-        case 0:
-            printf("saindo...\n");
-            break;
-        case 1:
-            //inserTabela();
-            break;
-        case 2:
-            printf("Qual a matricula a ser buscada? ");
-            scanf("%d", &mat);
-            p = buscarPalavraTabela(mat);
-            if(p) {
-                printf("Palavra encontrada: Matricula: %d\tNome: %s", p->texto);
-            } else
-                printf("Palavra nao contrada!\n");
-            break;
-        case 3:
-            imprimirTabela();
-            break;
-        default:
-            printf("Opcao invalida!\n");
-        }
-    } while(op != 0);*/
 
-    fscanf(fp, "%c", &c); //le um caractere do arquivo
-    do { //le todo o arquivo
-
-
-        if (isalpha(c)) { // verifica se o caractere eh uma letra
+    
+    while((c = fgetc(fp))!=EOF) {
+    	
+		if (isalpha(c)) { // verifica se o caractere eh uma letra
             c = tolower(c); //transforma caractere em letra minusculo
     		str[i] = c;
-    		i++;
+    		
 
+	        hash = (hash + (c - 'a' + 1) * p_pow) % M;
+	        p_pow = (p_pow * p) % M;	        
+	        i++;
         }
         else{
-        	inserTabela(str);
+        	inserTabela(str, hash);
         	i=0;
         	memset(str,0,strlen(str));
+        	hash = 0;
+        	p_pow = 1;
 		}
+	}	
 
-		fscanf(fp, "%c", &c); //le um caractere do arquivo
-    } while (!feof(fp)) ;
-
-    inserTabela(str);
+    //inserTabela(str);
     fclose(fp);
-    //limparHash();
-    imprimirTabela();
+    limparHash();
+    //imprimirTabela();
+    
+    buscaFreqPalavra("ascii");
 
     return 0;
 }

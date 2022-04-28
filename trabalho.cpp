@@ -4,6 +4,9 @@
 #include <strings.h>
 #include <ctype.h>
 #include <stddef.h>
+#include <vector>
+#include <algorithm>
+#include <iostream>
 
 // tamanho da tabela
 #define M 3989
@@ -20,6 +23,9 @@ typedef struct no {
     struct no *proximo;
     int cont;
     char texto[50];
+    bool operator()(no const& a, no const& b) const {
+        return a.cont < b.cont;
+    }
 } No;
 
 // tipo lista com um ponteiro para o primeiro nó
@@ -28,12 +34,11 @@ typedef struct {
     int tam;
 } Lista;
 
-typedef struct arvoreRB {
- int valor;
- int cor;
- struct arvoreRB *esq;
- struct arvoreRB *dir;
-} ArvoreRB;
+struct greater_than {
+    bool operator()(No* const& a, No* const& b) const {
+        return a->cont > b->cont;
+    }
+};
 
 // nossa tabela (vetor de ponteiros para listas)
 Lista *tabela[M];
@@ -63,7 +68,7 @@ void inserirInicio(char* p, Lista *lista) {
 
     No *no = (No*)malloc(sizeof(No));
     strcpy(no->texto,p);
-	no->cont = 1;    
+	no->cont = 1;
     no->proximo = lista->inicio;
     lista->inicio = no;
     lista->tam++;
@@ -103,7 +108,7 @@ void buscarPalavra(char* str, Lista *lista) {
             printf("\nFrequencia da palavra %s eh %d.", str, aux->cont);
             return;
 		}
-        else{            
+        else{
         	aux = aux->proximo;
 		}
     }
@@ -200,52 +205,29 @@ void imprimirTabela(){
     printf("---------------------FIM TABELA-----------------------\n");
 }
 
-
-
-void buscaFreqPalavra(char* str){
-	int indice = funcaoHashString(str);
-	buscarPalavra(str, tabela[indice]);
-}
-
-
-
-
-
-
-
-
-
-
-
-int main() {
+void populaTabela(char* arq){
     int i = 0;
     FILE *fp;
     char str[50];
     char c;
-    
     int p = 31, p_pow = 1;
 	unsigned int hash = 0;
 
-    if(fopen("512mb.txt", "rt") == NULL){
+	if(fopen(arq, "rt") == NULL){
     	printf("Arquivo nao encontrado.");
     	exit(0);
 	}
-	//fclose(fp);
-	fp = fopen("512mb.txt", "rt");
+	fp = fopen(arq, "rt");
 
-    inicializar();
+	while((c = fgetc(fp))!=EOF) {
 
-
-    
-    while((c = fgetc(fp))!=EOF) {
-    	
 		if (isalpha(c)) { // verifica se o caractere eh uma letra
             c = tolower(c); //transforma caractere em letra minusculo
     		str[i] = c;
-    		
+
 
 	        hash = (hash + (c - 'a' + 1) * p_pow) % M;
-	        p_pow = (p_pow * p) % M;	        
+	        p_pow = (p_pow * p) % M;
 	        i++;
         }
         else{
@@ -255,14 +237,107 @@ int main() {
         	hash = 0;
         	p_pow = 1;
 		}
-	}	
-
-    //inserTabela(str);
+	}
     fclose(fp);
     limparHash();
-    //imprimirTabela();
-    
-    buscaFreqPalavra("ascii");
+
+}
+
+void palavrasMaiorFreq (int n, char* arq) {
+    int first = 1;
+    std::vector<No*> elements;
+    std::vector<No*> s;
+    populaTabela(arq);
+    for(int k = 0; k < M; k++){
+        while(tabela[k]->inicio != NULL) {
+            s.push_back(tabela[k]->inicio);
+            tabela[k]->inicio = tabela[k]->inicio->proximo;
+        }
+        for (int i = 0; i < s.size(); i++)
+        {
+            // add the first 5 elements to the vector
+            if (i < n && first == 1)
+            {
+                elements.push_back(s.at(i));
+                if ( elements.size() == n ){
+                    // make the max-heap of the 5 elements
+                    std::make_heap(elements.begin(), elements.end(), greater_than());
+                    first = 0;
+                }
+                continue;
+            }
+
+            // now check if the next element is smaller than the top of the heap
+            if (elements.front()->cont <= s.at(i)->cont)
+            {
+                // remove the front of the heap by placing it at the end of the vector
+                std::pop_heap(elements.begin(), elements.end(), greater_than());
+
+                // get rid of that item now
+                elements.pop_back();
+
+                // add the new item
+                elements.push_back(s.at(i));
+
+                // heapify
+                std::push_heap(elements.begin(), elements.end(), greater_than());
+
+            }
+        }
+        s.clear();
+    }
+        // sort the heap
+        std::sort_heap(elements.begin(), elements.end(), greater_than());
+
+        for(int i = 0; i < elements.size(); i++){
+            printf("%s %d\n", elements.at(i)->texto, elements.at(i)->cont);
+        }
+
+
+}
+
+void buscaFreqPalavra(char* str, char* arq){
+    populaTabela(arq);
+	int indice = funcaoHashString(str);
+	buscarPalavra(str, tabela[indice]);
+}
+
+int main() {
+    int escolha = 0, n = 0;
+    char c, pal[50], arq[50];
+
+    inicializar();
+
+    printf("Escolha a operacao:\n\n1-Numero de ocorrencia de N palavras\n2-Frequencia de uma palavra\n3-TBD\n");
+    scanf("%d", &escolha);
+
+	switch (escolha) {
+    case 1:
+        printf("Informe o numero de palavras desejado:\n");
+        scanf("%d", &n);
+        printf("Informe o arquivo:\n");
+        scanf("%s", &arq);
+        palavrasMaiorFreq(n, arq);
+    break;
+
+    case 2:
+        printf("Informe a palavra que deseja saber a frequencia:\n");
+        scanf("%s", &pal);
+        printf("Informe o arquivo:\n");
+        scanf("%s", &arq);
+        for(int i = 0; pal[i]; i++){
+            pal[i] = tolower(pal[i]);
+        }
+        buscaFreqPalavra(pal, arq);
+    break;
+
+    case 3:
+
+    break;
+
+    default:
+    break;
+	}
 
     return 0;
 }

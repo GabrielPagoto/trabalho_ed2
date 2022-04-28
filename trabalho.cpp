@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 #include <ctype.h>
 #include <stddef.h>
+#include <pthread.h>
 
+using namespace std;
 // tamanho da tabela
 #define M 3989
+#define div M / 2
 
 // tipo Palavra
 /*typedef struct {
@@ -37,6 +39,9 @@ typedef struct arvoreRB {
 
 // nossa tabela (vetor de ponteiros para listas)
 Lista *tabela[M];
+int count = 0;
+
+
 
 //--------------------------------- fim definições variáveis --------------------
 
@@ -100,7 +105,7 @@ void buscarPalavra(char* str, Lista *lista) {
     No* aux = lista->inicio;
     while(aux != NULL) {
         if(strcmp(aux->texto, str) == 0){
-            printf("\nFrequencia da palavra %s eh %d.", str, aux->cont);
+            printf("\nFrequencia da palavra %s eh %d.\n", str, aux->cont);
             return;
 		}
         else{            
@@ -181,19 +186,27 @@ void imprimirLista(No *inicio) {
 }
 
 // imprimir tabela
-void limparHash(){
-    int i;
-
-    for(i = 0; i < M; i++){
+void *limparHash(void *threadid){
+    long tid = (long)threadid;
+    int i = tid*div;
+    int fim = (tid+1) * div;
+    if(fim > M)
+    fim = M + 1;
+    //printf("%d --> %d\n",i,fim-1);
+    for(i; i <= fim-1; i++){
+        //printf("%d --> %d\n",i,fim-1);
        percorrerLista(tabela[i]->inicio);
        }
+    count++;
+    pthread_exit(NULL);
 }
 
 void imprimirTabela(){
     int i;
+    
     printf("\n---------------------TABELA-------------------------\n");
     for(i = 0; i < M; i++){
-        percorrerLista(tabela[i]->inicio);
+        //percorrerLista(tabela[i]->inicio);
         printf("%d Lista tamanho: %d\n", i, tabela[i]->tam);
         //imprimirLista(tabela[i]->inicio);
     }
@@ -222,6 +235,8 @@ int main() {
     FILE *fp;
     char str[50];
     char c;
+    int rc;
+    pthread_t threads[2];
     
     int p = 31, p_pow = 1;
 	unsigned int hash = 0;
@@ -235,7 +250,7 @@ int main() {
 
     inicializar();
 
-
+    
     
     while((c = fgetc(fp))!=EOF) {
     	
@@ -258,11 +273,23 @@ int main() {
 	}	
 
     //inserTabela(str);
-    fclose(fp);
-    limparHash();
+   fclose(fp);
+   
+   for( i = 0; i < 2; i++ ) {
+      rc = pthread_create(&threads[i], NULL, limparHash, (void *)i);
+      if (rc) {
+         exit(-1);
+      }
+   }
+ 
     //imprimirTabela();
-    
+    while(count < 2){
+        continue;
+    }
     buscaFreqPalavra("ascii");
+    pthread_exit(NULL);
+    //limparHash();
+  
 
     return 0;
 }

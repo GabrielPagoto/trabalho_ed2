@@ -150,7 +150,7 @@ void inserTabela(char* str, int hash){
     inserirInicio(str, tabela[hash]);
 }
 
-// busca uma Palavra. Seu retorno é um endereço ou NULL
+// busca uma Palavra. Seu retorno eh um endereço ou NULL
 /*Palavra* buscarPalavraTabela(int mat){
 	Palavra* palavra;
     //int indice = funcaoEspalhamento(mat);
@@ -210,11 +210,11 @@ void populaTabela(char* arq){
     int p = 31, p_pow = 1;
 	unsigned int hash = 0;
 
-	if(fopen(arq, "rt") == NULL){
-    	printf("Arquivo nao encontrado.");
-    	exit(0);
-	}
 	fp = fopen(arq, "rt");
+	if(arq == NULL){
+		printf("Arquivo nao encontrado.");
+		return;
+	}
 
 	while((c = fgetc(fp))!=EOF) {
 
@@ -240,11 +240,12 @@ void populaTabela(char* arq){
 
 }
 
-void palavrasMaiorFreq (int n, char* arq) {
+void palavrasMaiorFreq (char* arq[]) {
     int first = 1;
     std::vector<No*> elements;
     std::vector<No*> s;
-    populaTabela(arq);
+    populaTabela(arq[3]);
+    int n = strtol(arq[2], NULL, 10);
     for(int k = 0; k < M; k++){
         while(tabela[k]->inicio != NULL) {
             s.push_back(tabela[k]->inicio);
@@ -299,7 +300,7 @@ void buscaFreqPalavra(char* str, char* arq){
 	buscarPalavra(str, tabela[indice]);
 }
 
-int main() {
+/*int main() {
     int escolha = 0, n = 0;
     char c, pal[50], arq[50];
 
@@ -324,7 +325,7 @@ int main() {
         scanf("%s", &arq);
         for(int i = 0; pal[i]; i++){
             pal[i] = tolower(pal[i]);
-        }*/
+        }
         buscaFreqPalavra(pal, arq);
     break;
 
@@ -337,4 +338,31 @@ int main() {
 	}
 
     return 0;
+}*/
+
+
+int main(int argc, char* argv[]) {
+	int escolha = 0, n = 0;
+    char c, pal[50], arq[50];
+
+    inicializar();
+	
+    if (argc <= 3) {
+        printf("Trabalho ED2 - Indexador \n");
+        printf("Alunos: Gabriel Felipe Pagoto, Jackson Longo dos Santos e Jose Adilson de Paula Cardoso \n");
+        printf("Opcoes:\n");
+        printf("--freq N ARQUIVO \nExibe o numero de ocorrencia das N palavras que mais aparecem em ARQUIVO, em ordem decrescente de ocorrencia.\n\n");
+        printf("--freq-word PALAVRA ARQUIVO \nExibe o numero de ocorrencias de PALAVRA em ARQUIVO. \n\n");
+        printf("--search TERMO ARQUIVO [ARQUIVO ...]\nExibe uma listagem dos ARQUIVOS mais relevantes encontrados pela busca por TERMO. A listagem eh apresentada em ordem descrescente de relevancia. TERMO pode conter mais de uma palavra. Neste caso, deve ser indicado entre aspas.\n");
+    } else if (strcmp(argv[1], "--freq") == 0) {
+       // opcaoFreq(argv);
+       palavrasMaiorFreq(argv);
+    } /*else if (strcmp(argv[1], "--freq-word") == 0) {
+    	break;
+       // opcaoFreqWord(argv[3], argv[2]);
+    } else if (strcmp(argv[1], "--search") == 0) {
+       // opcaoSearch(argc, argv);
+    }*/ else {
+        printf("Os parametros apresentados estao errados. Verifique a opcao desejada e tente novamente\n");
+    }
 }

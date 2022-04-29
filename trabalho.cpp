@@ -23,9 +23,6 @@ typedef struct no {
     struct no *proximo;
     int cont;
     char texto[50];
-    bool operator()(no const& a, no const& b) const {
-        return a.cont < b.cont;
-    }
 } No;
 
 // tipo lista com um ponteiro para o primeiro nó
@@ -327,7 +324,7 @@ int main() {
         scanf("%s", &arq);
         for(int i = 0; pal[i]; i++){
             pal[i] = tolower(pal[i]);
-        }
+        }*/
         buscaFreqPalavra(pal, arq);
     break;
 

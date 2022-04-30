@@ -54,7 +54,7 @@ Lista *tabela[M];
 // cria uma lista vazia e retorna seu endereço na memória
 Lista *criarLista()
 {
-    Lista *l = (Lista *)malloc(sizeof(Lista)*3);
+    Lista *l = (Lista *)malloc(sizeof(Lista) * 3);
     l->inicio = NULL;
     l->tam = 0;
     return l;
@@ -69,7 +69,7 @@ Lista *criarLista()
 void inserirInicio(char *p, Lista *lista)
 {
 
-    No *no = (No *)malloc(sizeof(No)*3);
+    No *no = (No *)malloc(sizeof(No) * 3);
     strcpy(no->texto, p);
     no->cont = 1;
     no->proximo = lista->inicio;
@@ -111,16 +111,20 @@ void buscarNo(char *str, Lista *lista)
     }
 }
 
-int incrementaContador(char* str, Lista *lista) {
-    No* aux = lista->inicio;
-    while(aux != NULL) {
-        if(strcmp(aux->texto, str) == 0){       	
+int incrementaContador(char *str, Lista *lista)
+{
+    No *aux = lista->inicio;
+    while (aux != NULL)
+    {
+        if (strcmp(aux->texto, str) == 0)
+        {
             aux->cont++;
             return 1;
-		}
-        else{
-        	aux = aux->proximo;
-		}		
+        }
+        else
+        {
+            aux = aux->proximo;
+        }
     }
     return 0;
 }
@@ -187,10 +191,11 @@ void inserTabela(char *str, int hash)
     }
 
     // int indice = funcaoHashString(str);
-    //inserirInicio(str, tabela[hash]);
-    if (incrementaContador(str, tabela[hash]) == 0){
-		inserirInicio(str, tabela[hash]);
-	}
+    // inserirInicio(str, tabela[hash]);
+    if (incrementaContador(str, tabela[hash]) == 0)
+    {
+        inserirInicio(str, tabela[hash]);
+    }
 }
 
 // busca uma Palavra. Seu retorno eh um endereço ou NULL
@@ -293,7 +298,7 @@ void populaTabela(char *arq)
         }
     }
     fclose(fp);
-    limparHash();
+    //limparHash();
 }
 
 void palavrasMaiorFreq(char *arq[])
@@ -305,10 +310,18 @@ void palavrasMaiorFreq(char *arq[])
     int n = strtol(arq[2], NULL, 10);
     for (int k = 0; k < M; k++)
     {
-        while (tabela[k]->inicio != NULL)
+        if (tabela[k] == NULL)
         {
-            s.push_back(tabela[k]->inicio);
-            tabela[k]->inicio = tabela[k]->inicio->proximo;
+            continue;
+        }
+        else
+        {
+            while (tabela[k]->inicio != NULL)
+            {
+
+                s.push_back(tabela[k]->inicio);
+                tabela[k]->inicio = tabela[k]->inicio->proximo;
+            }
         }
         for (int i = 0; i < s.size(); i++)
         {
@@ -396,7 +409,7 @@ int main(int argc, char *argv[])
     int escolha = 0, n = 0;
     char c, pal[50], arq[50];
 
-    // inicializar();
+    //inicializar();
 
     if (argc <= 3)
     {
@@ -411,10 +424,12 @@ int main(int argc, char *argv[])
     {
         // opcaoFreq(argv);
         palavrasMaiorFreq(argv);
-    } else if (strcmp(argv[1], "--freq-word") == 0) {
-        //break;
-       // opcaoFreqWord(argv[3], argv[2]);
-       buscaFreqPalavra(argv[2], argv[3]);
+    }
+    else if (strcmp(argv[1], "--freq-word") == 0)
+    {
+        // break;
+        // opcaoFreqWord(argv[3], argv[2]);
+        buscaFreqPalavra(argv[2], argv[3]);
     } /*else if (strcmp(argv[1], "--search") == 0) {
        // opcaoSearch(argc, argv);
     }*/

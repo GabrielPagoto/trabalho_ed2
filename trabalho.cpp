@@ -145,6 +145,10 @@ void inserTabela(char* str, int hash){
     if(strlen(str) <= 2){
     	return;
 	}
+	
+	if(tabela[hash] == NULL){
+		tabela[hash] = criarLista();
+	}
 
 	//int indice = funcaoHashString(str);
     inserirInicio(str, tabela[hash]);
@@ -345,7 +349,7 @@ int main(int argc, char* argv[]) {
 	int escolha = 0, n = 0;
     char c, pal[50], arq[50];
 
-    inicializar();
+    //inicializar();
 	
     if (argc <= 3) {
         printf("Trabalho ED2 - Indexador \n");

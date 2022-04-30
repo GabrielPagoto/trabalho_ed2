@@ -9,7 +9,7 @@
 #include <iostream>
 
 // tamanho da tabela
-#define M 3989
+#define M 99991
 
 // tipo Palavra
 /*typedef struct {
@@ -18,21 +18,25 @@
 } Palavra;*/
 
 // tipo nó usado na lista encadeada
-typedef struct no {
-    //Palavra palavra;
+typedef struct no
+{
+    // Palavra palavra;
     struct no *proximo;
     int cont;
     char texto[50];
 } No;
 
 // tipo lista com um ponteiro para o primeiro nó
-typedef struct {
+typedef struct
+{
     No *inicio;
     int tam;
 } Lista;
 
-struct greater_than {
-    bool operator()(No* const& a, No* const& b) const {
+struct greater_than
+{
+    bool operator()(No *const &a, No *const &b) const
+    {
         return a->cont > b->cont;
     }
 };
@@ -48,8 +52,9 @@ Lista *tabela[M];
 
 //-------------------------------- início funções lista -------------------------
 // cria uma lista vazia e retorna seu endereço na memória
-Lista* criarLista() {
-    Lista *l = (Lista*)malloc(sizeof(Lista));
+Lista *criarLista()
+{
+    Lista *l = (Lista *)malloc(sizeof(Lista)*3);
     l->inicio = NULL;
     l->tam = 0;
     return l;
@@ -61,78 +66,106 @@ Lista* criarLista() {
     p - nova Palavra a ser inserida
     *lista - endereço de uma lista encadeada.
 */
-void inserirInicio(char* p, Lista *lista) {
+void inserirInicio(char *p, Lista *lista)
+{
 
-    No *no = (No*)malloc(sizeof(No));
-    strcpy(no->texto,p);
-	no->cont = 1;
+    No *no = (No *)malloc(sizeof(No)*3);
+    strcpy(no->texto, p);
+    no->cont = 1;
     no->proximo = lista->inicio;
     lista->inicio = no;
     lista->tam++;
 }
 
 // busca um elemento na lista
-void buscarNo(char* str, Lista *lista) {
-	No* ant;
-    No* plv = NULL;
-    No* aux = lista->inicio;
-    while(aux != NULL) {
-        if(strcmp(aux->texto, str) == 0){
-            if(plv == NULL){
-        	//aux->palavra.cont++;
-            plv = aux;
+void buscarNo(char *str, Lista *lista)
+{
+    No *ant;
+    No *plv = NULL;
+    No *aux = lista->inicio;
+    while (aux != NULL)
+    {
+        if (strcmp(aux->texto, str) == 0)
+        {
+            if (plv == NULL)
+            {
+                // aux->palavra.cont++;
+                plv = aux;
+                ant = aux;
+                aux = aux->proximo;
+            }
+            else
+            {
+                plv->cont++;
+                ant->proximo = aux->proximo;
+                free(aux);
+                aux = ant->proximo;
+                lista->tam--;
+            }
+        }
+        else
+        {
             ant = aux;
             aux = aux->proximo;
-            }else{
-            	plv->cont++;
-		        ant->proximo = aux->proximo;
-		        free(aux);
-		        aux = ant->proximo;
-		        lista->tam--;
-            }
-		}
-        else{
-            ant = aux;
-        	aux = aux->proximo;
-		}
+        }
     }
 }
 
-void buscarPalavra(char* str, Lista *lista) {
+int incrementaContador(char* str, Lista *lista) {
     No* aux = lista->inicio;
     while(aux != NULL) {
-        if(strcmp(aux->texto, str) == 0){
-            printf("\nFrequencia da palavra %s eh %d.", str, aux->cont);
-            return;
+        if(strcmp(aux->texto, str) == 0){       	
+            aux->cont++;
+            return 1;
 		}
         else{
         	aux = aux->proximo;
-		}
+		}		
+    }
+    return 0;
+}
+
+void buscarPalavra(char *str, Lista *lista)
+{
+    No *aux = lista->inicio;
+    while (aux != NULL)
+    {
+        if (strcmp(aux->texto, str) == 0)
+        {
+            printf("\nFrequencia da palavra %s eh %d.", str, aux->cont);
+            return;
+        }
+        else
+        {
+            aux = aux->proximo;
+        }
     }
     printf("\nPalavra %s nao encontrada.", str);
     return;
 }
 
-
 //---------------------------------- fim funções lista -------------------------
 
 //--------------------------- início funções tabela hash -----------------------
 // inicializa a tabela com uma lista vazia em cada posição do vetor
-void inicializar(){
+void inicializar()
+{
     int i;
-    for(i = 0; i < M; i++)
+    for (i = 0; i < M; i++)
         tabela[i] = criarLista();
 }
 
 /*
     Função hash a partir de texto
 */
-int funcaoHashString(char* str){
+int funcaoHashString(char *str)
+{
 
     int i, p = 31, p_pow = 1, tamS = strlen(str);
     unsigned int hash = 0;
 
-    for(i = 0; i < tamS; i++){
+    for (i = 0; i < tamS; i++)
+    {
         hash = (hash + (str[i] - 'a' + 1) * p_pow) % M;
         p_pow = (p_pow * p) % M;
     }
@@ -140,23 +173,29 @@ int funcaoHashString(char* str){
 }
 
 // cria uma Palavra e a insere na tabela
-void inserTabela(char* str, int hash){
-    //Palavra pal = criarPalavra();
-    if(strlen(str) <= 2){
-    	return;
-	}
-	
-	if(tabela[hash] == NULL){
-		tabela[hash] = criarLista();
-	}
+void inserTabela(char *str, int hash)
+{
+    // Palavra pal = criarPalavra();
+    if (strlen(str) <= 2)
+    {
+        return;
+    }
 
-	//int indice = funcaoHashString(str);
-    inserirInicio(str, tabela[hash]);
+    if (tabela[hash] == NULL)
+    {
+        tabela[hash] = criarLista();
+    }
+
+    // int indice = funcaoHashString(str);
+    //inserirInicio(str, tabela[hash]);
+    if (incrementaContador(str, tabela[hash]) == 0){
+		inserirInicio(str, tabela[hash]);
+	}
 }
 
 // busca uma Palavra. Seu retorno eh um endereço ou NULL
 /*Palavra* buscarPalavraTabela(int mat){
-	Palavra* palavra;
+    Palavra* palavra;
     //int indice = funcaoEspalhamento(mat);
     int indice = funcaoHashString(palavra->texto);
     No *no = buscarNo(mat, tabela[indice]->inicio);
@@ -165,93 +204,109 @@ void inserTabela(char* str, int hash){
     else
         return NULL;
 }*/
-void limparPalavras(char* str) {
+void limparPalavras(char *str)
+{
     int indice = funcaoHashString(str);
-    buscarNo(str,tabela[indice]);
+    buscarNo(str, tabela[indice]);
 }
 
-void imprimirPalavra(No* p) {
+void imprimirPalavra(No *p)
+{
     printf("\tNome: %s Contador: %d\n", p->texto, p->cont);
 }
-void percorrerLista(No *inicio) {
-    while(inicio != NULL) {
+void percorrerLista(No *inicio)
+{
+    while (inicio != NULL)
+    {
         limparPalavras(inicio->texto);
         inicio = inicio->proximo;
     }
 }
-void imprimirLista(No *inicio) {
-    while(inicio != NULL) {
+void imprimirLista(No *inicio)
+{
+    while (inicio != NULL)
+    {
         imprimirPalavra(inicio);
         inicio = inicio->proximo;
     }
 }
 
 // imprimir tabela
-void limparHash(){
+void limparHash()
+{
     int i;
 
-    for(i = 0; i < M; i++){
-       percorrerLista(tabela[i]->inicio);
-       }
+    for (i = 0; i < M; i++)
+    {
+        percorrerLista(tabela[i]->inicio);
+    }
 }
 
-void imprimirTabela(){
+void imprimirTabela()
+{
     int i;
     printf("\n---------------------TABELA-------------------------\n");
-    for(i = 0; i < M; i++){
+    for (i = 0; i < M; i++)
+    {
         percorrerLista(tabela[i]->inicio);
         printf("%d Lista tamanho: %d\n", i, tabela[i]->tam);
-        //imprimirLista(tabela[i]->inicio);
+        // imprimirLista(tabela[i]->inicio);
     }
     printf("---------------------FIM TABELA-----------------------\n");
 }
 
-void populaTabela(char* arq){
+void populaTabela(char *arq)
+{
     int i = 0;
     FILE *fp;
     char str[50];
     char c;
     int p = 31, p_pow = 1;
-	unsigned int hash = 0;
+    unsigned int hash = 0;
 
-	fp = fopen(arq, "rt");
-	if(arq == NULL){
-		printf("Arquivo nao encontrado.");
-		return;
-	}
+    fp = fopen(arq, "rt");
+    if (arq == NULL)
+    {
+        printf("Arquivo nao encontrado.");
+        return;
+    }
 
-	while((c = fgetc(fp))!=EOF) {
+    while ((c = fgetc(fp)) != EOF)
+    {
 
-		if (isalpha(c)) { // verifica se o caractere eh uma letra
-            c = tolower(c); //transforma caractere em letra minusculo
-    		str[i] = c;
+        if (isalpha(c))
+        {                   // verifica se o caractere eh uma letra
+            c = tolower(c); // transforma caractere em letra minusculo
+            str[i] = c;
 
-
-	        hash = (hash + (c - 'a' + 1) * p_pow) % M;
-	        p_pow = (p_pow * p) % M;
-	        i++;
+            hash = (hash + (c - 'a' + 1) * p_pow) % M;
+            p_pow = (p_pow * p) % M;
+            i++;
         }
-        else{
-        	inserTabela(str, hash);
-        	i=0;
-        	memset(str,0,strlen(str));
-        	hash = 0;
-        	p_pow = 1;
-		}
-	}
+        else
+        {
+            inserTabela(str, hash);
+            i = 0;
+            memset(str, 0, strlen(str));
+            hash = 0;
+            p_pow = 1;
+        }
+    }
     fclose(fp);
     limparHash();
-
 }
 
-void palavrasMaiorFreq (char* arq[]) {
+void palavrasMaiorFreq(char *arq[])
+{
     int first = 1;
-    std::vector<No*> elements;
-    std::vector<No*> s;
+    std::vector<No *> elements;
+    std::vector<No *> s;
     populaTabela(arq[3]);
     int n = strtol(arq[2], NULL, 10);
-    for(int k = 0; k < M; k++){
-        while(tabela[k]->inicio != NULL) {
+    for (int k = 0; k < M; k++)
+    {
+        while (tabela[k]->inicio != NULL)
+        {
             s.push_back(tabela[k]->inicio);
             tabela[k]->inicio = tabela[k]->inicio->proximo;
         }
@@ -261,7 +316,8 @@ void palavrasMaiorFreq (char* arq[]) {
             if (i < n && first == 1)
             {
                 elements.push_back(s.at(i));
-                if ( elements.size() == n ){
+                if (elements.size() == n)
+                {
                     // make the max-heap of the 5 elements
                     std::make_heap(elements.begin(), elements.end(), greater_than());
                     first = 0;
@@ -283,37 +339,33 @@ void palavrasMaiorFreq (char* arq[]) {
 
                 // heapify
                 std::push_heap(elements.begin(), elements.end(), greater_than());
-
             }
         }
         s.clear();
     }
-        // sort the heap
-        std::sort_heap(elements.begin(), elements.end(), greater_than());
+    // sort the heap
+    std::sort_heap(elements.begin(), elements.end(), greater_than());
 
-        for(int i = 0; i < elements.size(); i++){
-            printf("%s %d\n", elements.at(i)->texto, elements.at(i)->cont);
-        }
-
-
+    for (int i = 0; i < elements.size(); i++)
+    {
+        printf("%s %d\n", elements.at(i)->texto, elements.at(i)->cont);
+    }
 }
 
-void buscaFreqPalavra(char* str, char* arq){
+void buscaFreqPalavra(char *str, char *arq)
+{
     populaTabela(arq);
-	int indice = funcaoHashString(str);
-	buscarPalavra(str, tabela[indice]);
+    int indice = funcaoHashString(str);
+    buscarPalavra(str, tabela[indice]);
 }
 
 /*int main() {
     int escolha = 0, n = 0;
     char c, pal[50], arq[50];
-
     inicializar();
-
     printf("Escolha a operacao:\n\n1-Numero de ocorrencia de N palavras\n2-Frequencia de uma palavra\n3-TBD\n");
     scanf("%d", &escolha);
-
-	switch (escolha) {
+    switch (escolha) {
     case 1:
         printf("Informe o numero de palavras desejado:\n");
         scanf("%d", &n);
@@ -321,7 +373,6 @@ void buscaFreqPalavra(char* str, char* arq){
         scanf("%s", &arq);
         palavrasMaiorFreq(n, arq);
     break;
-
     case 2:
         printf("Informe a palavra que deseja saber a frequencia:\n");
         scanf("%s", &pal);
@@ -332,41 +383,43 @@ void buscaFreqPalavra(char* str, char* arq){
         }
         buscaFreqPalavra(pal, arq);
     break;
-
     case 3:
-
     break;
-
     default:
     break;
-	}
-
+    }
     return 0;
 }*/
 
-
-int main(int argc, char* argv[]) {
-	int escolha = 0, n = 0;
+int main(int argc, char *argv[])
+{
+    int escolha = 0, n = 0;
     char c, pal[50], arq[50];
 
-    //inicializar();
-	
-    if (argc <= 3) {
+    // inicializar();
+
+    if (argc <= 3)
+    {
         printf("Trabalho ED2 - Indexador \n");
         printf("Alunos: Gabriel Felipe Pagoto, Jackson Longo dos Santos e Jose Adilson de Paula Cardoso \n");
         printf("Opcoes:\n");
         printf("--freq N ARQUIVO \nExibe o numero de ocorrencia das N palavras que mais aparecem em ARQUIVO, em ordem decrescente de ocorrencia.\n\n");
         printf("--freq-word PALAVRA ARQUIVO \nExibe o numero de ocorrencias de PALAVRA em ARQUIVO. \n\n");
         printf("--search TERMO ARQUIVO [ARQUIVO ...]\nExibe uma listagem dos ARQUIVOS mais relevantes encontrados pela busca por TERMO. A listagem eh apresentada em ordem descrescente de relevancia. TERMO pode conter mais de uma palavra. Neste caso, deve ser indicado entre aspas.\n");
-    } else if (strcmp(argv[1], "--freq") == 0) {
-       // opcaoFreq(argv);
-       palavrasMaiorFreq(argv);
-    } /*else if (strcmp(argv[1], "--freq-word") == 0) {
-    	break;
+    }
+    else if (strcmp(argv[1], "--freq") == 0)
+    {
+        // opcaoFreq(argv);
+        palavrasMaiorFreq(argv);
+    } else if (strcmp(argv[1], "--freq-word") == 0) {
+        //break;
        // opcaoFreqWord(argv[3], argv[2]);
-    } else if (strcmp(argv[1], "--search") == 0) {
+       buscaFreqPalavra(argv[2], argv[3]);
+    } /*else if (strcmp(argv[1], "--search") == 0) {
        // opcaoSearch(argc, argv);
-    }*/ else {
+    }*/
+    else
+    {
         printf("Os parametros apresentados estao errados. Verifique a opcao desejada e tente novamente\n");
     }
 }

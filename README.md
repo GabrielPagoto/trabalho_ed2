@@ -19,7 +19,8 @@ $ cd trabalho_ed2
 $ g++ -o trabalho trabalho.cpp
 
 # apos isso execute o trabalho usando um dos comandos 
+```bash
 $ ./ trabalho  --freq N ARQUIVO
 $ ./ trabalho  --freq-word PALAVRA ARQUIVO
 $ ./ trabalho  --search TERMO ARQUIVO [ARQUIVO ...]
-
+```

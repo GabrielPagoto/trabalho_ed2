@@ -32,11 +32,6 @@ typedef struct
     int tam;
 } Lista;
 
-typedef struct
-{
-    Relevancia *inicio;
-} ListaRelevancia;
-
 struct greater_than
 {
     bool operator()(No *const &a, No *const &b) const
@@ -45,9 +40,16 @@ struct greater_than
     }
 };
 
+struct more_relevant
+{
+    bool operator()(Relevancia *const &a, Relevancia  *const &b) const
+    {
+        return a->valor > b->valor;
+    }
+};
+
 // nossa tabela (vetor de ponteiros para listas)
 Lista *tabela[M];
-ListaRelevancia *listaRelevancia;
 
 //--------------------------------- fim definições variáveis --------------------
 
@@ -65,36 +67,6 @@ Lista *criarLista()
     return l;
 }
 
-ListaRelevancia *criarListaRelevancia()
-{
-    ListaRelevancia *lr = (ListaRelevancia *)malloc(sizeof(ListaRelevancia));
-    lr->inicio = NULL;
-    return lr;
-}
-
-void insereOrdenado(Relevancia *rel){
-    Relevancia *relaux = (Relevancia*)malloc(sizeof(Relevancia));
-
-    // a lista est� vazia?
-    if(listaRelevancia == NULL){
-        listaRelevancia = criarListaRelevancia();
-		listaRelevancia->inicio = rel;
-    }
-	// � o menor?
-	if(rel->valor < (listaRelevancia)->inicio->valor){
-        rel->proximo = listaRelevancia->inicio;
-        listaRelevancia->inicio = rel;
-    }
-    else{
-        relaux = listaRelevancia->inicio;
-        while(relaux->proximo && rel->valor > relaux->proximo->valor)
-            relaux = relaux->proximo;
-        rel->proximo = relaux->proximo;
-        relaux->proximo = rel;
-    }
-
-}
-
 /*
     inserir no início da lista
     PARÂMETROS
@@ -110,40 +82,6 @@ void inserirInicio(char *p, Lista *lista)
     no->proximo = lista->inicio;
     lista->inicio = no;
     lista->tam++;
-}
-
-// busca um elemento na lista
-void buscarNo(char *str, Lista *lista)
-{
-    No *ant;
-    No *plv = NULL;
-    No *aux = lista->inicio;
-    while (aux != NULL)
-    {
-        if (strcmp(aux->texto, str) == 0)
-        {
-            if (plv == NULL)
-            {
-                // aux->palavra.cont++;
-                plv = aux;
-                ant = aux;
-                aux = aux->proximo;
-            }
-            else
-            {
-                plv->cont++;
-                ant->proximo = aux->proximo;
-                free(aux);
-                aux = ant->proximo;
-                lista->tam--;
-            }
-        }
-        else
-        {
-            ant = aux;
-            aux = aux->proximo;
-        }
-    }
 }
 
 int incrementaContador(char *str, Lista *lista)
@@ -183,19 +121,8 @@ void buscarPalavra(char *str, Lista *lista)
     return;
 }
 
-//---------------------------------- fim funções lista -------------------------
-
-//--------------------------- início funções tabela hash -----------------------
-// inicializa a tabela com uma lista vazia em cada posição do vetor
-void inicializar()
-{
-    int i;
-    for (i = 0; i < M; i++)
-        tabela[i] = criarLista();
-}
-
 /*
-    Função hash a partir de texto
+    Funcao hash a partir de texto
 */
 int funcaoHashString(char *str)
 {
@@ -244,56 +171,6 @@ void inserTabela(char *str, int hash)
     else
         return NULL;
 }*/
-void limparPalavras(char *str)
-{
-    int indice = funcaoHashString(str);
-    buscarNo(str, tabela[indice]);
-}
-
-void imprimirPalavra(No *p)
-{
-    printf("\tNome: %s Contador: %d\n", p->texto, p->cont);
-}
-void percorrerLista(No *inicio)
-{
-    while (inicio != NULL)
-    {
-        limparPalavras(inicio->texto);
-        inicio = inicio->proximo;
-    }
-}
-void imprimirLista(No *inicio)
-{
-    while (inicio != NULL)
-    {
-        imprimirPalavra(inicio);
-        inicio = inicio->proximo;
-    }
-}
-
-// imprimir tabela
-void limparHash()
-{
-    int i;
-
-    for (i = 0; i < M; i++)
-    {
-        percorrerLista(tabela[i]->inicio);
-    }
-}
-
-void imprimirTabela()
-{
-    int i;
-    printf("\n---------------------TABELA-------------------------\n");
-    for (i = 0; i < M; i++)
-    {
-        percorrerLista(tabela[i]->inicio);
-        printf("%d Lista tamanho: %d\n", i, tabela[i]->tam);
-        // imprimirLista(tabela[i]->inicio);
-    }
-    printf("---------------------FIM TABELA-----------------------\n");
-}
 
 void populaTabela(char *arq)
 {
@@ -333,7 +210,6 @@ void populaTabela(char *arq)
         }
     }
     fclose(fp);
-    // limparHash();
 }
 
 void palavrasMaiorFreq(char *arq[])
@@ -360,39 +236,31 @@ void palavrasMaiorFreq(char *arq[])
         }
         for (int i = 0; i < s.size(); i++)
         {
-            // add the first 5 elements to the vector
-            if (i < n && first == 1)
+            if (i < n && first == 1) // adiciona os primeiros n elementos ao heap
             {
                 elements.push_back(s.at(i));
                 if (elements.size() == n)
                 {
-                    // make the max-heap of the 5 elements
-                    std::make_heap(elements.begin(), elements.end(), greater_than());
+                    std::make_heap(elements.begin(), elements.end(), greater_than()); // cria o min_heap de n elementos
                     first = 0;
                 }
                 continue;
             }
 
-            // now check if the next element is smaller than the top of the heap
-            if (elements.front()->cont <= s.at(i)->cont)
+            if (elements.front()->cont <= s.at(i)->cont) //checa se o prox�mo elemento na lista eh maior
             {
-                // remove the front of the heap by placing it at the end of the vector
-                std::pop_heap(elements.begin(), elements.end(), greater_than());
+                std::pop_heap(elements.begin(), elements.end(), greater_than()); // coloca o primeiro elemento no final
 
-                // get rid of that item now
-                elements.pop_back();
+                elements.pop_back(); // remove esse elemento
 
-                // add the new item
-                elements.push_back(s.at(i));
+                elements.push_back(s.at(i));// adiciona o novo elemento
 
-                // heapify
-                std::push_heap(elements.begin(), elements.end(), greater_than());
+                std::push_heap(elements.begin(), elements.end(), greater_than()); //faz o heap
             }
         }
-        s.clear();
+        s.clear(); // limpa o vetor para receber a proxima lista da tabela
     }
-    // sort the heap
-    std::sort_heap(elements.begin(), elements.end(), greater_than());
+    std::sort_heap(elements.begin(), elements.end(), greater_than());// ordena o heap
 
     for (int i = 0; i < elements.size(); i++)
     {
@@ -419,27 +287,43 @@ void inserirVetor(std::vector<No *> termos, char * str){
     }
 }
 
-std::vector<float> calculoTF(std::vector<float> TF, std::vector<No *> termos, int contador){
+std::vector<Relevancia *> calculoTF(char* nome, std::vector<Relevancia *> TF, std::vector<No *> termos, int contador){
 	int i;
+	float aux;
 
 	for (i = 0; i < termos.size(); i++)
     {
-    	TF.push_back((termos.at(i)->cont) / contador);
+        Relevancia* rel = (Relevancia*)malloc(sizeof(Relevancia));
+        aux = (float)(termos.at(i)->cont / (float)contador);
+        strcpy(rel->nomeArquivo, nome);
+        rel->valor = aux;
+        rel->proximo = NULL;
+    	TF.push_back(rel);
     }
     return TF;
 }
 
-/*float * calculoIDF(std::vector<No*> arquivos, ) {
+float calculoIDF(std::vector<No*> arquivos, int arqspresente) {
     float aux;
-    aux =
+    if(arqspresente!=0){
+        aux = (float)(arquivos.size() / (float)arqspresente);
+    } else {
+        return 0;
+    }
+    if(aux == 1) {
+        return 0.01;
+    }
+    return log10(aux);
 
-}*/
+}
 
 
 void buscaRelevanciaTermoArquivo(char * termo, char * arq){
 	std::vector<No *> termos;
 	std::vector<No *> arquivos;
-	std::vector<float> TF;
+	std::vector<Relevancia *> TF, TFIDF;
+	std::vector<int> arqspresente;
+	std::vector<float> IDF;
 	int i, cont = 0, contador = 0, j;
 	char str[100];
     FILE *fp;
@@ -458,6 +342,7 @@ void buscaRelevanciaTermoArquivo(char * termo, char * arq){
 		    no->cont = 0;
 		    no->proximo = NULL;
 		    termos.push_back(no);
+		    arqspresente.push_back(0);
 		    cont=0;
             memset(str, 0, strlen(str));
         }
@@ -466,6 +351,7 @@ void buscaRelevanciaTermoArquivo(char * termo, char * arq){
     strcpy(no->texto, str);
     no->cont = 0;
     no->proximo = NULL;
+    arqspresente.push_back(0);
     termos.push_back(no);
     cont=0;
     memset(str, 0, strlen(str));
@@ -495,16 +381,6 @@ void buscaRelevanciaTermoArquivo(char * termo, char * arq){
     cont=0;
     memset(str, 0, strlen(str));
 
-	/*for (i = 0; i < termos.size(); i++)
-    {
-        printf("%s %d\n", termos.at(i)->texto, termos.at(i)->cont);
-    }
-
-    for (i = 0; i < arquivos.size(); i++)
-    {
-        printf("%s \n", arquivos.at(i)->texto);
-    }*/
-
     for(i=0; i<arquivos.size(); i++){
     	j=0;
 
@@ -532,46 +408,45 @@ void buscaRelevanciaTermoArquivo(char * termo, char * arq){
 	            contador++;
 	        }
 	    }
-	    TF = calculoTF(TF, termos, contador);
-	    printf("%f\n", TF.at(0));
+	    TF = calculoTF(arquivos.at(i)->texto, TF, termos, contador);
 	    fclose(fp);
 	    contador = 0;
 	    memset(str, 0, strlen(str));
 	}
+
+	    for(int h = 0; h<arquivos.size();  h++){
+            for(int k = 0; k < termos.size(); k++){
+                if(TF.at(contador)->valor > 0.0){
+                    arqspresente.at(k)++;
+                }
+                contador++;
+            }
+	    }
+
+	    for(int i = 0; i < termos.size(); i++) {
+            IDF.push_back(calculoIDF(arquivos, arqspresente.at(i)));
+	    }
+	    contador = 0;
+	    float aux = 0, media;
+	    for(int i = 0; i < arquivos.size(); i++){
+            for(int j = 0; j < termos.size(); j++){
+                aux += TF.at(contador)->valor * IDF.at(j);
+                contador++;
+            }
+            media = aux / termos.size();
+            Relevancia* rel = (Relevancia*)malloc(sizeof(Relevancia));
+            strcpy(rel->nomeArquivo, arquivos.at(i)->texto);
+            rel->valor = media;
+            rel->proximo = NULL;
+            TFIDF.push_back(rel);
+	    }
+
+	    std::sort_heap(TFIDF.begin(), TFIDF.end(), more_relevant());
+	    for(int i = 0; i<TFIDF.size(); i++){
+            printf("Arquivo: %s Relevancia: %f\n", TFIDF.at(i)->nomeArquivo, TFIDF.at(i)->valor);
+	    }
+
 }
-
-
-/*int main() {
-    int escolha = 0, n = 0;
-    char c, pal[50], arq[50];
-    inicializar();
-    printf("Escolha a operacao:\n\n1-Numero de ocorrencia de N palavras\n2-Frequencia de uma palavra\n3-TBD\n");
-    scanf("%d", &escolha);
-    switch (escolha) {
-    case 1:
-        printf("Informe o numero de palavras desejado:\n");
-        scanf("%d", &n);
-        printf("Informe o arquivo:\n");
-        scanf("%s", &arq);
-        palavrasMaiorFreq(n, arq);
-    break;
-    case 2:
-        printf("Informe a palavra que deseja saber a frequencia:\n");
-        scanf("%s", &pal);
-        printf("Informe o arquivo:\n");
-        scanf("%s", &arq);
-        for(int i = 0; pal[i]; i++){
-            pal[i] = tolower(pal[i]);
-        }
-        buscaFreqPalavra(pal, arq);
-    break;
-    case 3:
-    break;
-    default:
-    break;
-    }
-    return 0;
-}*/
 
 int main(int argc, char *argv[])
 {
@@ -579,8 +454,6 @@ int main(int argc, char *argv[])
     char c, pal[100], arq[100];
     char strTermos[100];
     char strArquivos[100];
-
-    // inicializar();
 
     if (argc <= 3)
     {
@@ -593,19 +466,15 @@ int main(int argc, char *argv[])
     }
     else if (strcmp(argv[1], "--freq") == 0)
     {
-        // opcaoFreq(argv);
         palavrasMaiorFreq(argv);
     }
     else if (strcmp(argv[1], "--freq-word") == 0)
     {
-        // break;
-        // opcaoFreqWord(argv[3], argv[2]);
         buscaFreqPalavra(argv[2], argv[3]);
     } else if (strcmp(argv[1], "--search") == 0) {
     	strcpy(strTermos, argv[2]);
     	strcpy(strArquivos, argv[3]);
     	buscaRelevanciaTermoArquivo(strTermos, strArquivos);
-        //opcaoSearch(argc, argv);
     }
     else
     {

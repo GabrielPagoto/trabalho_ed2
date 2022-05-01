@@ -11,6 +11,7 @@
 // tamanho da tabela
 #define M 99991
 
+
 // tipo Palavra
 /*typedef struct {
     int cont;
@@ -20,11 +21,17 @@
 // tipo nó usado na lista encadeada
 typedef struct no
 {
-    // Palavra palavra;
     struct no *proximo;
     int cont;
-    char texto[50];
+    char texto[100];
 } No;
+
+typedef struct relevancia
+{
+    struct relevancia *proximo;
+    float valor;
+    char nomeArquivo[100];
+} Relevancia;
 
 // tipo lista com um ponteiro para o primeiro nó
 typedef struct
@@ -32,6 +39,11 @@ typedef struct
     No *inicio;
     int tam;
 } Lista;
+
+typedef struct
+{
+    Relevancia *inicio;    
+} ListaRelevancia;
 
 struct greater_than
 {
@@ -43,6 +55,7 @@ struct greater_than
 
 // nossa tabela (vetor de ponteiros para listas)
 Lista *tabela[M];
+ListaRelevancia *listaRelevancia;
 
 //--------------------------------- fim definições variáveis --------------------
 
@@ -58,6 +71,36 @@ Lista *criarLista()
     l->inicio = NULL;
     l->tam = 0;
     return l;
+}
+
+ListaRelevancia *criarListaRelevancia()
+{
+    ListaRelevancia *lr = (ListaRelevancia *)malloc(sizeof(ListaRelevancia));
+    lr->inicio = NULL;
+    return lr;
+}
+
+void insereOrdenado(Relevancia *rel){
+    Relevancia *relaux = (Relevancia*)malloc(sizeof(Relevancia));
+
+    // a lista est� vazia?
+    if(listaRelevancia == NULL){
+        listaRelevancia = criarListaRelevancia();
+		listaRelevancia->inicio = rel;        
+    } 
+	// � o menor?    
+	if(rel->valor < (listaRelevancia)->inicio->valor){
+        rel->proximo = listaRelevancia->inicio;
+        listaRelevancia->inicio = rel;
+    }
+    else{
+        relaux = listaRelevancia->inicio;
+        while(relaux->proximo && rel->valor > relaux->proximo->valor)
+            relaux = relaux->proximo;
+        rel->proximo = relaux->proximo;
+        relaux->proximo = rel;
+    }
+
 }
 
 /*
@@ -136,7 +179,7 @@ void buscarPalavra(char *str, Lista *lista)
     {
         if (strcmp(aux->texto, str) == 0)
         {
-            printf("\nFrequencia da palavra %s eh %d.", str, aux->cont);
+            printf("\nFrequencia da palavra %s eh %d.\n", str, aux->cont);
             return;
         }
         else
@@ -144,7 +187,7 @@ void buscarPalavra(char *str, Lista *lista)
             aux = aux->proximo;
         }
     }
-    printf("\nPalavra %s nao encontrada.", str);
+    printf("\nPalavra %s nao encontrada.\n", str);
     return;
 }
 
@@ -264,7 +307,7 @@ void populaTabela(char *arq)
 {
     int i = 0;
     FILE *fp;
-    char str[50];
+    char str[100];
     char c;
     int p = 31, p_pow = 1;
     unsigned int hash = 0;
@@ -298,7 +341,7 @@ void populaTabela(char *arq)
         }
     }
     fclose(fp);
-    //limparHash();
+    // limparHash();
 }
 
 void palavrasMaiorFreq(char *arq[])
@@ -372,6 +415,134 @@ void buscaFreqPalavra(char *str, char *arq)
     buscarPalavra(str, tabela[indice]);
 }
 
+void inserirVetor(std::vector<No *> termos, char * str){
+	int i;
+	
+	for (i = 0; i < termos.size(); i++)
+    {
+        if(strcmp(str, termos.at(i)->texto) == 0){
+        	termos.at(i)->cont++;
+        	return;
+		}
+    }
+}
+
+float * calculoTF(char * nomeArquivo, std::vector<No *> termos, int contador){
+	int i;
+	float TF[termos.size()];
+	
+	for (i = 0; i < termos.size(); i++)
+    {
+    	TF[i] = (termos.at(i)->cont) / contador; 
+    }
+    
+    return TF;
+}
+
+
+void buscaRelevanciaTermoArquivo(char * termo, char * arq){
+	std::vector<No *> termos;
+	std::vector<No *> arquivos;	
+	int i, cont = 0, contador = 0, j;
+	char str[100];	
+    FILE *fp;
+    char c;
+	
+	for(i=0; termo[i]; i++){
+		if (isalpha(termo[i]))
+        {                   // verifica se o caractere eh uma letra            
+            str[cont] = tolower(termo[i]);  // transforma caractere em letra minusculo            
+            cont++;
+        }
+        else
+        {
+			No *no = (No *)malloc(sizeof(No));
+		    strcpy(no->texto, str);
+		    no->cont = 0;
+		    no->proximo = NULL;
+		    termos.push_back(no);
+		    cont=0;
+            memset(str, 0, strlen(str));            
+        }
+	}
+	No *no = (No *)malloc(sizeof(No));
+    strcpy(no->texto, str);
+    no->cont = 0;
+    no->proximo = NULL;
+    termos.push_back(no);
+    cont=0;
+    memset(str, 0, strlen(str)); 
+	
+	for(i=0; arq[i]; i++){
+		if (isalnum(arq[i]) || arq[i] == '.')
+        {                   // verifica se o caractere eh uma letra            
+            str[cont] = tolower(arq[i]);  // transforma caractere em letra minusculo
+            cont++;
+        }
+        else
+        {
+            No *no = (No *)malloc(sizeof(No));
+		    strcpy(no->texto, str);
+		    no->cont = 0;
+		    no->proximo = NULL;
+		    arquivos.push_back(no);
+		    cont=0;
+            memset(str, 0, strlen(str));
+        }
+	}
+	No *no2 = (No *)malloc(sizeof(No));
+    strcpy(no2->texto, str);
+    no2->cont = 0;
+    no2->proximo = NULL;
+    arquivos.push_back(no2);
+    cont=0;
+    memset(str, 0, strlen(str));
+	
+	/*for (i = 0; i < termos.size(); i++)
+    {
+        printf("%s %d\n", termos.at(i)->texto, termos.at(i)->cont);
+    }
+    
+    for (i = 0; i < arquivos.size(); i++)
+    {
+        printf("%s \n", arquivos.at(i)->texto);
+    }*/
+    
+    for(i=0; i<arquivos.size(); i++){
+    	j=0;
+	
+	    fp = fopen(arquivos.at(i)->texto, "rt");
+	    if (arquivos.at(i)->texto == NULL)
+	    {
+	        printf("Arquivo nao encontrado.");
+	        return;
+	    }
+	
+	    while ((c = fgetc(fp)) != EOF)
+	    {
+	
+	        if (isalpha(c))
+	        {                   // verifica se o caractere eh uma letra
+	            c = tolower(c); // transforma caractere em letra minusculo
+	            str[j] = c;
+	            j++;
+	        }
+	        else
+	        {
+				inserirVetor(termos, str);
+	            j = 0;
+	            memset(str, 0, strlen(str));
+	            contador++;
+	        }
+	    }
+	    calculoTF(arquivos.at(i)->texto, termos, contador);
+	    fclose(fp);
+	    contador = 0;
+	    memset(str, 0, strlen(str));
+	}
+}
+
+
 /*int main() {
     int escolha = 0, n = 0;
     char c, pal[50], arq[50];
@@ -407,9 +578,11 @@ void buscaFreqPalavra(char *str, char *arq)
 int main(int argc, char *argv[])
 {
     int escolha = 0, n = 0;
-    char c, pal[50], arq[50];
+    char c, pal[100], arq[100];
+    char strTermos[100];
+    char strArquivos[100];
 
-    //inicializar();
+    // inicializar();
 
     if (argc <= 3)
     {
@@ -430,9 +603,12 @@ int main(int argc, char *argv[])
         // break;
         // opcaoFreqWord(argv[3], argv[2]);
         buscaFreqPalavra(argv[2], argv[3]);
-    } /*else if (strcmp(argv[1], "--search") == 0) {
-       // opcaoSearch(argc, argv);
-    }*/
+    } else if (strcmp(argv[1], "--search") == 0) {    
+    	strcpy(strTermos, argv[2]);
+    	strcpy(strArquivos, argv[3]);
+    	buscaRelevanciaTermoArquivo(strTermos, strArquivos);
+        //opcaoSearch(argc, argv);
+    }
     else
     {
         printf("Os parametros apresentados estao errados. Verifique a opcao desejada e tente novamente\n");

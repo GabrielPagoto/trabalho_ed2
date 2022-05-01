@@ -18,17 +18,8 @@ $ cd trabalho_ed2
 # no terminal/cmd digite
 $ g++ -o trabalho trabalho.cpp
 
-# apos isso execute o trabalho digitando
-$ ./ trabalho (comando desejado)
+# apos isso execute o trabalho usando um dos comandos 
+$ ./ trabalho  --freq N ARQUIVO
+$ ./ trabalho  --freq-word PALAVRA ARQUIVO
+$ ./ trabalho  --search TERMO ARQUIVO [ARQUIVO ...]
 
-# OPÇÕES
-  --freq N ARQUIVO
-    Exibe o número de ocorrência das N palavras que mais aparecem em ARQUIVO, em
-    ordem decrescente de ocorrência.
-  --freq-word PALAVRA ARQUIVO
-    Exibe o número de ocorrências de PALAVRA em ARQUIVO. 
-  --search TERMO ARQUIVO [ARQUIVO ...]
-    Exibe uma listagem dos ARQUIVOS mais relevantes encontrados pela busca por 
-    TERMO. A listagem é apresentada em ordem descrescente de relevância. 
-    TERMO pode conter mais de uma palavra. Neste caso, deve ser indicado entre 
-    àspas.

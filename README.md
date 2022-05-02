@@ -1,10 +1,10 @@
 # indexer
 
-## Trabalho final da materia de estrutura de dados dois.
+## Trabalho final da materia de Estrutura de Dados - Dois.
 
 ### Pré-requisitos
 
-Antes de começar, você vai precisar que sua maquina possa compliar arquivos c e execulalos via CLI
+Antes de começar, você vai precisar que sua máquina possa compilar arquivos C e executá-los via CLI
 
 
 ### 🎲 Rodando o projeto

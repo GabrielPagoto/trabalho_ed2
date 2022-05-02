@@ -25,7 +25,7 @@ typedef struct relevancia
     char nomeArquivo[100];
 } Relevancia;
 
-// tipo lista com um ponteiro para o primeiro nó
+// tipo lista com um ponteiro para o primeiro nÃ³
 typedef struct
 {
     No *inicio;
@@ -51,14 +51,14 @@ struct more_relevant
 // nossa tabela (vetor de ponteiros para listas)
 Lista *tabela[M];
 
-//--------------------------------- fim definições variáveis --------------------
+//--------------------------------- fim definiÃ§Ãµes variÃ¡veis --------------------
 
-//--------------------------------- funções meus tipos --------------------------
+//--------------------------------- funÃ§Ãµes meus tipos --------------------------
 
 // imprime uma Palavra
 
-//-------------------------------- início funções lista -------------------------
-// cria uma lista vazia e retorna seu endereço na memória
+//-------------------------------- inÃ­cio funÃ§Ãµes lista -------------------------
+// cria uma lista vazia e retorna seu endereÃ§o na memÃ³ria
 Lista *criarLista()
 {
     Lista *l = (Lista *)malloc(sizeof(Lista) * 3);
@@ -68,10 +68,10 @@ Lista *criarLista()
 }
 
 /*
-    inserir no início da lista
-    PARÂMETROS
+    inserir no inÃ­cio da lista
+    PARÃ‚METROS
     p - nova Palavra a ser inserida
-    *lista - endereço de uma lista encadeada.
+    *lista - endereÃ§o de uma lista encadeada.
 */
 void inserirInicio(char *p, Lista *lista)
 {
@@ -160,7 +160,7 @@ void inserTabela(char *str, int hash)
     }
 }
 
-// busca uma Palavra. Seu retorno eh um endereço ou NULL
+// busca uma Palavra. Seu retorno eh um endereÃ§o ou NULL
 /*Palavra* buscarPalavraTabela(int mat){
     Palavra* palavra;
     //int indice = funcaoEspalhamento(mat);
@@ -247,7 +247,7 @@ void palavrasMaiorFreq(char *arq[])
                 continue;
             }
 
-            if (elements.front()->cont <= s.at(i)->cont) //checa se o prox�mo elemento na lista eh maior
+            if (elements.front()->cont <= s.at(i)->cont) //checa se o proxímo elemento na lista eh maior
             {
                 std::pop_heap(elements.begin(), elements.end(), greater_than()); // coloca o primeiro elemento no final
 

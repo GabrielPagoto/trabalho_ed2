@@ -2,6 +2,8 @@
 
 ## Trabalho final da materia de Estrutura de Dados - Dois.
 
+Alunos: Gabriel Felipe Pagoto, Jackson Longo dos Santos, José Adilson de Paula Cardoso.
+
 ### Pré-requisitos
 
 Antes de começar, você vai precisar que sua máquina possa compilar arquivos C e executá-los via CLI

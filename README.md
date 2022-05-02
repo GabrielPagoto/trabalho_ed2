@@ -27,3 +27,5 @@ $ ./indexer  --freq N ARQUIVO
 $ ./indexer  --freq-word PALAVRA ARQUIVO
 $ ./indexer  --search TERMO ARQUIVO [ARQUIVO ...]
 ```
+
+Obs. O nome dos arquivos só pode conter letras e números, sem caracteres especiais.
